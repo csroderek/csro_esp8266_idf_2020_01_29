@@ -4,9 +4,11 @@
 #include <stdio.h>
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
+#include "freertos/timers.h"
 #include "esp_system.h"
 #include "esp_spi_flash.h"
 #include "esp_wifi.h"
+#include "driver/gpio.h"
 #include "esp_smartconfig.h"
 #include "esp_event_loop.h"
 
@@ -15,7 +17,7 @@
 #include "lwip/sockets.h"
 #include "cJSON.h"
 
-#define USE_CLOUD_SERVER
+//#define USE_CLOUD_SERVER
 
 #define NLIGHT_NB_4K4R
 /*
@@ -61,6 +63,7 @@ extern esp_mqtt_client_handle_t mqttclient;
 
 //csro_common.c
 void csro_main(void);
+void csro_reset_router(void);
 
 //csro_smart.c
 void csro_smart_task(void);

@@ -16,7 +16,7 @@ static esp_err_t mqtt_event_handler(esp_mqtt_event_handle_t event)
 
 static void udp_receive_mqtt_server(void)
 {
-#ifdef USE_CLOUD_SERVE
+#ifdef USE_CLOUD_SERVER
     static char udp_buffer[256] = "{\"server\":\"csro.net.cn\"}";
 #else
     static char udp_buffer[256];

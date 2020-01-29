@@ -28,6 +28,16 @@ static void csro_mqtt_client_info(void)
     printf("\r\nid = %s.\nname = %s.\npass = %s.\r\nssid = %s.\r\npass = %s.\r\n", mqttinfo.id, mqttinfo.name, mqttinfo.pass, sysinfo.router_ssid, sysinfo.router_pass);
 }
 
+void csro_reset_router(void)
+{
+    nvs_handle handle;
+    nvs_open("system", NVS_READWRITE, &handle);
+    nvs_set_u8(handle, "router_flag", 0);
+    nvs_commit(handle);
+    nvs_close(handle);
+    esp_restart();
+}
+
 void csro_main(void)
 {
     nvs_handle handle;
