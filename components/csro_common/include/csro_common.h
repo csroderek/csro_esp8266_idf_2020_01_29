@@ -6,9 +6,14 @@
 #include "freertos/task.h"
 #include "esp_system.h"
 #include "esp_spi_flash.h"
+#include "esp_wifi.h"
+#include "esp_smartconfig.h"
+#include "esp_event_loop.h"
 
 #include "nvs_flash.h"
 #include "mqtt_client.h"
+#include "lwip/sockets.h"
+#include "cJSON.h"
 
 #define USE_CLOUD_SERVER
 
@@ -56,7 +61,6 @@ extern esp_mqtt_client_handle_t mqttclient;
 
 //csro_common.c
 void csro_main(void);
-void csro_mqtt_client_info(void);
 
 //csro_smart.c
 void csro_smart_task(void);
