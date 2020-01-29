@@ -1,0 +1,31 @@
+#include "csro_common.h"
+#include "csro_devices.h"
+
+csro_system sysinfo;
+csro_mqtt mqttinfo;
+esp_mqtt_client_handle_t mqttclient;
+
+void csro_mqtt_client_info(void)
+{
+}
+
+void csro_main(void)
+{
+    nvs_handle handle;
+    nvs_flash_init();
+    nvs_open("system", NVS_READWRITE, &handle);
+    nvs_get_u32(handle, "power_cnt", &sysinfo.power_cnt);
+    nvs_set_u32(handle, "power_cnt", (sysinfo.power_cnt + 1));
+    nvs_get_u8(handle, "router_flag", &sysinfo.router_flag);
+    nvs_commit(handle);
+    nvs_close(handle);
+    csro_device_init();
+    if (sysinfo.router_flag == 1)
+    {
+        csro_mqtt_task();
+    }
+    else
+    {
+        csro_smart_task();
+    }
+}
