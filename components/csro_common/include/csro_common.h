@@ -19,7 +19,10 @@
 
 //#define USE_CLOUD_SERVER
 
-#define NLIGHT_NB_4K4R
+#define MANUFACTURER "NANJING CSRO CO.,LTD."
+#define SOFT_VERSION "2020-01-29"
+
+#define NLIGHT_NB_6K4R
 /*
 #define NLIGHT_NB_4K4R
 #define NLIGHT_NB_6K4R

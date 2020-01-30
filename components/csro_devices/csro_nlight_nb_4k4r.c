@@ -125,9 +125,9 @@ void csro_nlight_nb_4k4r_on_connect(esp_mqtt_event_handle_t event)
         cJSON_AddItemToObject(config_json, "dev", device);
         cJSON_AddStringToObject(device, "ids", deviceid);
         cJSON_AddStringToObject(device, "name", deviceid);
-        cJSON_AddStringToObject(device, "mf", "CSRO");
+        cJSON_AddStringToObject(device, "mf", MANUFACTURER);
         cJSON_AddStringToObject(device, "mdl", "NLIGHT_NB_4K4R");
-        cJSON_AddStringToObject(device, "sw", "2020_01_29");
+        cJSON_AddStringToObject(device, "sw", SOFT_VERSION);
 
         char *out = cJSON_PrintUnformatted(config_json);
         strcpy(mqttinfo.content, out);
