@@ -5,6 +5,7 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "freertos/timers.h"
+#include "freertos/semphr.h"
 #include "esp_system.h"
 #include "esp_spi_flash.h"
 #include "esp_wifi.h"
@@ -22,7 +23,7 @@
 #define MANUFACTURER "NANJING CSRO CO.,LTD."
 #define SOFT_VERSION "2020-01-29"
 
-#define MOTOR_NB_4K4R
+#define AIRMON_CSRO_A
 /*
 #define NLIGHT_NB_4K4R
 #define NLIGHT_NB_6K4R

@@ -67,11 +67,12 @@ static void udp_receive_mqtt_server(void)
                     .username = mqttinfo.name,
                     .password = mqttinfo.pass,
                     .uri = mqttinfo.uri,
-                    .keepalive = 60,
+                    .keepalive = 2,
                     .lwt_topic = mqttinfo.lwt_topic,
                     .lwt_msg = "offline",
                     .lwt_retain = 1,
                     .lwt_qos = 1,
+                    .transport = MQTT_TRANSPORT_OVER_TCP,
                 };
                 mqttclient = esp_mqtt_client_init(&mqtt_cfg);
                 esp_mqtt_client_start(mqttclient);

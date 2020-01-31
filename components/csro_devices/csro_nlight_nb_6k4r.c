@@ -13,7 +13,7 @@
 
 int light_state[4] = {0, 0, 0, 0};
 
-void nlight_nb_6k4r_mqtt_update(void)
+static void nlight_nb_6k4r_mqtt_update(void)
 {
     if (mqttclient != NULL)
     {

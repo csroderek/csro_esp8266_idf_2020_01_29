@@ -21,7 +21,7 @@ typedef enum
 
 motor_state motor[2] = {STOP, STOP};
 
-void motor_nb_4k4r_mqtt_update(void)
+static void motor_nb_4k4r_mqtt_update(void)
 {
     if (mqttclient != NULL)
     {
@@ -95,6 +95,7 @@ static void motor_nb_4k4r_relay_led_task(void *args)
         {
             if (motor_last[i] != motor[i])
             {
+                //printf("motor%d, %d\r\n", i, motor[i]);
                 motor_last[i] = motor[i];
                 update = true;
                 if (motor[i] == STOP || motor[i] == STOP_TO_CLOSE || motor[i] == STOP_TO_OPEN)
