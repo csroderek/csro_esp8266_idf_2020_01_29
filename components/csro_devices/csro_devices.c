@@ -29,7 +29,7 @@ void csro_device_init(void)
 
 #elif defined AIRMON_CSRO_A
     sprintf(sysinfo.dev_type, "airmon_csro_a");
-    csro_airmon_csro_a_init() ；
+    csro_airmon_csro_a_init();
 #endif
 }
 

@@ -1,6 +1,8 @@
 #include "aw9523b.h"
 #include "driver/i2c.h"
 
+#ifdef AW9523B
+
 #define I2C_MASTER_SCL_IO 2
 #define I2C_MASTER_SDA_IO 14
 #define I2C_MASTER_NUM I2C_NUM_0
@@ -127,3 +129,5 @@ void csro_set_vibrator(void)
         xSemaphoreGive(i2c_mutex);
     }
 }
+
+#endif

@@ -24,6 +24,7 @@
 #define SOFT_VERSION "2020-01-29"
 
 #define AIRMON_CSRO_A
+//#define AW9523B
 /*
 #define NLIGHT_NB_4K4R
 #define NLIGHT_NB_6K4R
