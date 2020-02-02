@@ -51,11 +51,13 @@ void csro_main(void)
     csro_device_init();
     if (sysinfo.router_flag == 1)
     {
+        printf("starting mqtt......\r\n");
         csro_mqtt_client_info();
         csro_mqtt_task();
     }
     else
     {
+        printf("starting smart......\r\n");
         csro_smart_task();
     }
 }

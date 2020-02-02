@@ -67,7 +67,7 @@ static void udp_receive_mqtt_server(void)
                     .username = mqttinfo.name,
                     .password = mqttinfo.pass,
                     .uri = mqttinfo.uri,
-                    .keepalive = 2,
+                    .keepalive = 60,
                     .lwt_topic = mqttinfo.lwt_topic,
                     .lwt_msg = "offline",
                     .lwt_retain = 1,

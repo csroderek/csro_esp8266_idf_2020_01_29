@@ -12,6 +12,7 @@
 #define AQI_LED_B GPIO_NUM_13
 #define FAN_PIN GPIO_NUM_15
 #define BTN_PIN GPIO_NUM_0
+#define GPIO_INPUT_PIN_SEL ((1ULL << BTN_PIN))
 
 #define AVE_COUNT 60
 
@@ -174,6 +175,16 @@ static void led_task(void *arg)
     pwm_set_phases(phase);
     pwm_start();
     bool flash = false;
+
+    static uint32_t hold_time;
+    gpio_config_t io_conf;
+    io_conf.intr_type = GPIO_INTR_DISABLE;
+    io_conf.mode = GPIO_MODE_INPUT;
+    io_conf.pin_bit_mask = GPIO_INPUT_PIN_SEL;
+    io_conf.pull_down_en = 0;
+    io_conf.pull_up_en = 1;
+    gpio_config(&io_conf);
+
     while (true)
     {
         flash = !flash;
@@ -202,6 +213,20 @@ static void led_task(void *arg)
         pwm_set_duty(4, color[aqi_index][1] * 10);
         pwm_set_duty(5, color[aqi_index][2] * 10);
         pwm_start();
+
+        int key_status = gpio_get_level(BTN_PIN);
+        if (key_status == 0)
+        {
+            hold_time++;
+        }
+        else
+        {
+            if (hold_time >= 30)
+            {
+                csro_reset_router();
+            }
+            hold_time = 0;
+        }
         vTaskDelay(500 / portTICK_RATE_MS);
     }
     vTaskDelete(NULL);
