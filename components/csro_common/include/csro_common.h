@@ -18,19 +18,29 @@
 #include "lwip/sockets.h"
 #include "cJSON.h"
 
-//#define USE_CLOUD_SERVER
+#define USE_CLOUD_SERVER
 
-#define MANUFACTURER "NANJING CSRO CO.,LTD."
+#define MANUFACTURER "南京金星宇节能技术有限公司"
 #define SOFT_VERSION "2020-01-29"
 
-#define AIRMON_CSRO_A
-//#define AW9523B
+#define NLIGHT_NB_4K4R
+
 /*
 #define NLIGHT_NB_4K4R
 #define NLIGHT_NB_6K4R
+
+#define NLIGHT_SZ_1K1R
+#define NLIGHT_SZ_2K2R
+#define NLIGHT_SZ_3K3R
+#define NLIGHT_SZ_4K4R
+
 #define MOTOR_NB_4K4R
 #define AIRMON_CSRO_A
 */
+
+#ifndef AIRMON_CSRO_A
+#define AW9523B
+#endif
 
 typedef struct
 {
