@@ -110,12 +110,12 @@ static void nlight_nb_6k4r_relay_led_task(void *args)
                 status[i] = light_state[i];
                 update = true;
             }
-            csro_set_led(i, light_state[i] == 1 ? 128 : 8);
-            csro_set_relay(i, light_state[i] == 1 ? true : false);
+            csro_set_led_nb(i, light_state[i] == 1 ? 128 : 8);
+            csro_set_relay_nb(i, light_state[i] == 1 ? true : false);
         }
         if (update)
         {
-            csro_set_vibrator();
+            csro_set_vibrator_nb();
             nlight_nb_6k4r_mqtt_update();
         }
         vTaskDelay(50 / portTICK_RATE_MS);
@@ -125,7 +125,7 @@ static void nlight_nb_6k4r_relay_led_task(void *args)
 
 void csro_nlight_nb_6k4r_init(void)
 {
-    csro_aw9523b_init();
+    csro_aw9523b_init_nb();
     xTaskCreate(nlight_nb_6k4r_key_task, "nlight_nb_6k4r_key_task", 2048, NULL, configMAX_PRIORITIES - 7, NULL);
     xTaskCreate(nlight_nb_6k4r_relay_led_task, "nlight_nb_6k4r_relay_led_task", 2048, NULL, configMAX_PRIORITIES - 8, NULL);
 }

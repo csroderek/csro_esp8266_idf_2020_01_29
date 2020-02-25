@@ -119,14 +119,14 @@ static void motor_nb_4k4r_relay_led_task(void *args)
                     motor[i] = (motor[i] == STOP_TO_CLOSE) ? CLOSE : (motor[i] == STOP_TO_OPEN) ? OPEN : STOP;
                 }
             }
-            csro_set_led(i, (motor[i] == OPEN) ? 128 : 8);
-            csro_set_led(i + 2, (motor[i] == CLOSE) ? 128 : 8);
-            csro_set_relay(2 * i, (motor[i] == OPEN) ? true : false);
-            csro_set_relay(2 * i + 1, (motor[i] == CLOSE) ? true : false);
+            csro_set_led_nb(i, (motor[i] == OPEN) ? 128 : 8);
+            csro_set_led_nb(i + 2, (motor[i] == CLOSE) ? 128 : 8);
+            csro_set_relay_nb(2 * i, (motor[i] == OPEN) ? true : false);
+            csro_set_relay_nb(2 * i + 1, (motor[i] == CLOSE) ? true : false);
         }
         if (update)
         {
-            csro_set_vibrator();
+            csro_set_vibrator_nb();
             motor_nb_4k4r_mqtt_update();
         }
         vTaskDelay(100 / portTICK_RATE_MS);
@@ -136,7 +136,7 @@ static void motor_nb_4k4r_relay_led_task(void *args)
 
 void csro_motor_nb_4k4r_init(void)
 {
-    csro_aw9523b_init();
+    csro_aw9523b_init_nb();
     xTaskCreate(motor_nb_4k4r_key_task, "motor_nb_4k4r_key_task", 2048, NULL, configMAX_PRIORITIES - 7, NULL);
     xTaskCreate(motor_nb_4k4r_relay_led_task, "motor_nb_4k4r_relay_led_task", 2048, NULL, configMAX_PRIORITIES - 8, NULL);
 }

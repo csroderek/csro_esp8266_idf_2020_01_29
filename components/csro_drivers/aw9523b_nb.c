@@ -70,7 +70,7 @@ static void vibrator_timer_callback(TimerHandle_t xTimer)
     i2c_master_aw9523b_write(0x02, data);
 }
 
-void csro_aw9523b_init(void)
+void csro_aw9523b_init_nb(void)
 {
     i2c_config_t conf;
     conf.mode = I2C_MODE_MASTER;
@@ -91,7 +91,7 @@ void csro_aw9523b_init(void)
     i2c_mutex = xSemaphoreCreateMutex();
 }
 
-void csro_set_led(uint8_t led_num, uint8_t bright)
+void csro_set_led_nb(uint8_t led_num, uint8_t bright)
 {
     if (xSemaphoreTake(i2c_mutex, portMAX_DELAY) == pdTRUE)
     {
@@ -100,7 +100,7 @@ void csro_set_led(uint8_t led_num, uint8_t bright)
     }
 }
 
-void csro_set_relay(uint8_t relay_num, uint8_t state)
+void csro_set_relay_nb(uint8_t relay_num, uint8_t state)
 {
     if (xSemaphoreTake(i2c_mutex, portMAX_DELAY) == pdTRUE)
     {
@@ -118,7 +118,7 @@ void csro_set_relay(uint8_t relay_num, uint8_t state)
     }
 }
 
-void csro_set_vibrator(void)
+void csro_set_vibrator_nb(void)
 {
     if (xSemaphoreTake(i2c_mutex, portMAX_DELAY) == pdTRUE)
     {
