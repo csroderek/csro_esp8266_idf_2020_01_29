@@ -1,7 +1,7 @@
 #include "aw9523b.h"
 #include "driver/i2c.h"
 
-#ifdef AW9523B
+#ifdef AW9523B_NB
 
 #define I2C_MASTER_SCL_IO 2
 #define I2C_MASTER_SDA_IO 14

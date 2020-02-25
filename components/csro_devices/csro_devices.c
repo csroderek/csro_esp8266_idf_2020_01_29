@@ -30,6 +30,10 @@ void csro_device_init(void)
 #elif defined AIRMON_CSRO_A
     sprintf(sysinfo.dev_type, "airmon_csro_a");
     csro_airmon_csro_a_init();
+
+#elif defined NLIGHT_SZ_2K2R
+    sprintf(sysinfo.dev_type, "nlight_sz_2k2r");
+    csro_nlight_sz_2k2r_init();
 #endif
 }
 
@@ -46,6 +50,9 @@ void csro_device_on_connect(esp_mqtt_event_handle_t event)
 
 #elif defined AIRMON_CSRO_A
     csro_airmon_csro_a_on_connect(event);
+
+#elif defined NLIGHT_SZ_2K2R
+    csro_nlight_sz_2k2r_on_connect(event);
 #endif
 }
 
@@ -62,5 +69,8 @@ void csro_device_on_message(esp_mqtt_event_handle_t event)
 
 #elif defined AIRMON_CSRO_A
     csro_airmon_csro_a_on_message(event);
+
+#elif defined NLIGHT_SZ_2K2R
+    csro_nlight_sz_2k2r_on_message(event);
 #endif
 }
