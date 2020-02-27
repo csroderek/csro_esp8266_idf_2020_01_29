@@ -20,6 +20,7 @@ typedef enum
 } motor_state;
 
 motor_state motor[2] = {STOP, STOP};
+uint8_t flash_led = false;
 
 static void motor_nb_4k4r_mqtt_update(void)
 {
@@ -60,6 +61,10 @@ static void motor_nb_4k4r_key_task(void *args)
             }
             else
             {
+                if (hold_time[i] >= 750)
+                {
+                    csro_reset_router();
+                }
                 hold_time[i] = 0;
             }
         }
@@ -79,6 +84,7 @@ static void motor_nb_4k4r_key_task(void *args)
         {
             motor[1] = (motor[1] == STOP) ? CLOSE : STOP;
         }
+        flash_led = (hold_time[0] > 750 || hold_time[1] > 750 || hold_time[2] > 750 || hold_time[3] > 750) ? true : false;
         vTaskDelay(20 / portTICK_RATE_MS);
     }
     vTaskDelete(NULL);

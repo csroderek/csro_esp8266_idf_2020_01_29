@@ -23,8 +23,8 @@
 #define MANUFACTURER "南京金星宇节能技术有限公司"
 #define SOFT_VERSION "2020-01-29"
 
-#define NLIGHT_SZ_2K2R
-#define AW9523B_SZ
+#define AIRMON_CSRO_A
+// #define AW9523B_SZ
 
 /*
 #define NLIGHT_NB_4K4R

@@ -53,7 +53,7 @@ static void nlight_nb_4k4r_key_task(void *args)
             }
             else
             {
-                if (hold_time[i] >= 3000)
+                if (hold_time[i] >= 750)
                 {
                     csro_reset_router();
                 }
