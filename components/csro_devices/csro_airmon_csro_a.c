@@ -10,11 +10,9 @@
 #define AQI_LED_R GPIO_NUM_12
 #define AQI_LED_G GPIO_NUM_14
 #define AQI_LED_B GPIO_NUM_13
-#define FAN_PIN GPIO_NUM_15
-#define BTN_PIN GPIO_NUM_0
-#define GPIO_INPUT_PIN_SEL ((1ULL << BTN_PIN))
-
-#define AVE_COUNT 60
+#define FAN_PIN_NUM GPIO_NUM_15
+#define BUTTON_PIN_NUM GPIO_NUM_0
+#define GPIO_INPUT_PIN_SEL ((1ULL << BUTTON_PIN_NUM))
 
 #define BLUE 0, 0, 255
 #define GREEN 0, 255, 0
@@ -23,92 +21,47 @@
 #define ORANGE 255, 102, 0
 #define RED 255, 0, 0
 
-typedef struct
-{
-    uint32_t pm1_atm[AVE_COUNT + 1];
-    uint32_t pm2_atm[AVE_COUNT + 1];
-    uint32_t pm10_atm[AVE_COUNT + 1];
-    float hcho[AVE_COUNT + 1];
-    float temp[AVE_COUNT + 1];
-    float humi[AVE_COUNT + 1];
-} pms_data;
+#define TOTAL 60
 
+uint8_t flash_led = false;
+uint8_t aqi_index = 0;
+
+uint32_t pm1_ave, pm1[TOTAL];
+uint32_t pm2_ave, pm2[TOTAL];
+uint32_t pm10_ave, pm10[TOTAL];
+float temp_ave, temp[TOTAL];
+float humi_ave, humi[TOTAL];
+float hcho_ave, hcho[TOTAL];
+
+static uint8_t pm_grade[5] = {35, 75, 115, 150, 250};
+static float hcho_grade[5] = {0.05, 0.1, 0.2, 0.5, 0.8};
+static uint8_t color[6][3] = {{BLUE}, {GREEN}, {GREENYELLOW}, {YELLOW}, {ORANGE}, {RED}};
 static char *itemlist[6] = {"temp", "humi", "hcho", "pm1", "pm2d5", "pm10"};
 static char *unitlist[6] = {"°C", "\%", "mg/m^3", "ug/m^3", "ug/m^3", "ug/m^3"};
 static char *iconlist[6] = {"mdi:thermometer-lines", "mdi:water-percent", "mdi:alien", "mdi:blur", "mdi:blur", "mdi:blur"};
-
-static uint8_t color[6][3] = {{BLUE}, {GREEN}, {GREENYELLOW}, {YELLOW}, {ORANGE}, {RED}};
 static uint8_t roundlist[6] = {1, 1, 3, 0, 0, 0};
-static uint8_t pm_array[5] = {35, 75, 115, 150, 250};
-static float hchi_array[5] = {0.05, 0.1, 0.2, 0.5, 0.8};
 
 static QueueHandle_t uart0_queue;
-static xSemaphoreHandle pub_sem;
-static pms_data pms;
-static uint8_t aqi_index = 0;
 
-static void receive_sensor_values_task(void *arg)
+static void csro_airmon_csro_a_mqtt_update(void)
 {
-    while (true)
+    if (mqttclient != NULL)
     {
-        if (xSemaphoreTake(pub_sem, portMAX_DELAY) == pdTRUE)
-        {
-            pms.pm1_atm[AVE_COUNT] = 0;
-            pms.pm2_atm[AVE_COUNT] = 0;
-            pms.pm10_atm[AVE_COUNT] = 0;
-            pms.hcho[AVE_COUNT] = 0;
-            pms.temp[AVE_COUNT] = 0;
-            pms.humi[AVE_COUNT] = 0;
-            for (size_t i = 0; i < AVE_COUNT; i++)
-            {
-                pms.pm1_atm[AVE_COUNT] = pms.pm1_atm[AVE_COUNT] + pms.pm1_atm[i];
-                pms.pm2_atm[AVE_COUNT] = pms.pm2_atm[AVE_COUNT] + pms.pm2_atm[i];
-                pms.pm10_atm[AVE_COUNT] = pms.pm10_atm[AVE_COUNT] + pms.pm10_atm[i];
-                pms.hcho[AVE_COUNT] = pms.hcho[AVE_COUNT] + pms.hcho[i];
-                pms.temp[AVE_COUNT] = pms.temp[AVE_COUNT] + pms.temp[i];
-                pms.humi[AVE_COUNT] = pms.humi[AVE_COUNT] + pms.humi[i];
-            }
-            pms.pm1_atm[AVE_COUNT] = pms.pm1_atm[AVE_COUNT] / AVE_COUNT;
-            pms.pm2_atm[AVE_COUNT] = pms.pm2_atm[AVE_COUNT] / AVE_COUNT;
-            pms.pm10_atm[AVE_COUNT] = pms.pm10_atm[AVE_COUNT] / AVE_COUNT;
-            pms.hcho[AVE_COUNT] = pms.hcho[AVE_COUNT] / AVE_COUNT;
-            pms.temp[AVE_COUNT] = pms.temp[AVE_COUNT] / AVE_COUNT;
-            pms.humi[AVE_COUNT] = pms.humi[AVE_COUNT] / AVE_COUNT;
-
-            uint8_t aqi_temp = 0;
-            for (size_t i = 0; i < 5; i++)
-            {
-                if ((pms.pm2_atm[AVE_COUNT] > pm_array[i]) || (pms.hcho[AVE_COUNT] > hchi_array[i]))
-                {
-                    aqi_temp = i + 1;
-                    aqi_index = aqi_temp;
-                }
-                else
-                {
-                    break;
-                }
-            }
-
-            cJSON *sensor_json = cJSON_CreateObject();
-            cJSON_AddNumberToObject(sensor_json, "pm1", pms.pm1_atm[AVE_COUNT]);
-            cJSON_AddNumberToObject(sensor_json, "pm2d5", pms.pm2_atm[AVE_COUNT]);
-            cJSON_AddNumberToObject(sensor_json, "pm10", pms.pm10_atm[AVE_COUNT]);
-            cJSON_AddNumberToObject(sensor_json, "temp", pms.temp[AVE_COUNT]);
-            cJSON_AddNumberToObject(sensor_json, "humi", pms.humi[AVE_COUNT]);
-            cJSON_AddNumberToObject(sensor_json, "hcho", pms.hcho[AVE_COUNT]);
-            cJSON_AddNumberToObject(sensor_json, "run", sysinfo.time_run);
-            char *out = cJSON_PrintUnformatted(sensor_json);
-            strcpy(mqttinfo.content, out);
-            free(out);
-            cJSON_Delete(sensor_json);
-            sprintf(mqttinfo.pub_topic, "csro/%s/%s/state", sysinfo.mac_str, sysinfo.dev_type);
-            if (mqttclient != NULL)
-            {
-                esp_mqtt_client_publish(mqttclient, mqttinfo.pub_topic, mqttinfo.content, 0, 0, 1);
-            }
-        }
+        cJSON *sensor_json = cJSON_CreateObject();
+        cJSON_AddNumberToObject(sensor_json, "pm1", pm1_ave);
+        cJSON_AddNumberToObject(sensor_json, "pm2d5", pm2_ave);
+        cJSON_AddNumberToObject(sensor_json, "pm10", pm10_ave);
+        cJSON_AddNumberToObject(sensor_json, "temp", temp_ave);
+        cJSON_AddNumberToObject(sensor_json, "humi", humi_ave);
+        cJSON_AddNumberToObject(sensor_json, "hcho", hcho_ave);
+        cJSON_AddNumberToObject(sensor_json, "run", sysinfo.time_run);
+        char *out = cJSON_PrintUnformatted(sensor_json);
+        strcpy(mqttinfo.content, out);
+        free(out);
+        cJSON_Delete(sensor_json);
+        sprintf(mqttinfo.pub_topic, "csro/%s/%s/state", sysinfo.mac_str, sysinfo.dev_type);
+        esp_mqtt_client_publish(mqttclient, mqttinfo.pub_topic, mqttinfo.content, 0, 0, 1);
     }
-    vTaskDelete(NULL);
 }
 
 static void uart_event_task(void *args)
@@ -125,6 +78,7 @@ static void uart_event_task(void *args)
     uart_event_t event;
     static uint8_t msg_count = 0;
     uint8_t *dtmp = (uint8_t *)malloc(128);
+
     while (true)
     {
         if (xQueueReceive(uart0_queue, (void *)&event, portMAX_DELAY))
@@ -133,23 +87,48 @@ static void uart_event_task(void *args)
             if (event.type == UART_DATA)
             {
                 uart_read_bytes(UART_NUM_0, dtmp, event.size, portMAX_DELAY);
-                uint16_t sum = 0;
-                for (size_t i = 0; i < 38; i++)
+                uint16_t check_sum = 0;
+                for (uint8_t i = 0; i < 38; i++)
                 {
-                    sum = sum + dtmp[i];
+                    check_sum = check_sum + dtmp[i];
                 }
-                if (dtmp[38] == (sum >> 8) && dtmp[39] == (sum & 0xFF))
+                if (dtmp[38] == (check_sum >> 8) && dtmp[39] == (check_sum & 0xFF))
                 {
-                    pms.pm1_atm[msg_count] = dtmp[10] * 256 + dtmp[11];
-                    pms.pm2_atm[msg_count] = dtmp[12] * 256 + dtmp[13];
-                    pms.pm10_atm[msg_count] = dtmp[14] * 256 + dtmp[15];
-                    pms.hcho[msg_count] = (float)(dtmp[28] * 256 + dtmp[29]) / 1000.0;
-                    pms.temp[msg_count] = (float)(dtmp[30] * 256 + dtmp[31]) / 10.0;
-                    pms.humi[msg_count] = (float)(dtmp[32] * 256 + dtmp[33]) / 10.0;
-                    msg_count = (msg_count + 1) % AVE_COUNT;
+                    pm1[msg_count] = dtmp[10] * 256 + dtmp[11];
+                    pm2[msg_count] = dtmp[12] * 256 + dtmp[13];
+                    pm10[msg_count] = dtmp[14] * 256 + dtmp[15];
+                    hcho[msg_count] = (float)(dtmp[28] * 256 + dtmp[29]) / 1000.0;
+                    temp[msg_count] = (float)(dtmp[30] * 256 + dtmp[31]) / 10.0;
+                    humi[msg_count] = (float)(dtmp[32] * 256 + dtmp[33]) / 10.0;
+                    msg_count = (msg_count + 1) % TOTAL;
                     if (msg_count == 0)
                     {
-                        xSemaphoreGive(pub_sem);
+                        for (uint8_t i = 0; i < TOTAL; i++)
+                        {
+                            pm1_ave = ((i == 0) ? 0 : pm1_ave) + pm1[i];
+                            pm2_ave = ((i == 0) ? 0 : pm2_ave) + pm2[i];
+                            pm10_ave = ((i == 0) ? 0 : pm10_ave) + pm10[i];
+                            temp_ave = ((i == 0) ? 0 : temp_ave) + temp[i];
+                            humi_ave = ((i == 0) ? 0 : humi_ave) + humi[i];
+                            hcho_ave = ((i == 0) ? 0 : hcho_ave) + hcho[i];
+                        }
+                        pm1_ave = pm1_ave / TOTAL;
+                        pm2_ave = pm2_ave / TOTAL;
+                        pm10_ave = pm10_ave / TOTAL;
+                        temp_ave = temp_ave / TOTAL;
+                        humi_ave = humi_ave / TOTAL;
+                        hcho_ave = hcho_ave / TOTAL;
+
+                        uint8_t aqi_index_temp = 0;
+                        for (uint8_t i = 0; i < 5; i++)
+                        {
+                            if ((pm2_ave > pm_grade[i]) || (hcho_ave > hcho_grade[i]))
+                            {
+                                aqi_index_temp = i + 1;
+                            }
+                        }
+                        aqi_index = aqi_index_temp;
+                        csro_airmon_csro_a_mqtt_update();
                     }
                 }
             }
@@ -167,15 +146,39 @@ static void uart_event_task(void *args)
 
 static void led_task(void *arg)
 {
-    const uint32_t pin_num[7] = {WIFI_LED_R, WIFI_LED_G, WIFI_LED_B, AQI_LED_R, AQI_LED_G, AQI_LED_B, FAN_PIN};
+    const uint32_t pin_num[7] = {WIFI_LED_R, WIFI_LED_G, WIFI_LED_B, AQI_LED_R, AQI_LED_G, AQI_LED_B, FAN_PIN_NUM};
     uint32_t duties[7] = {0, 0, 0, 0, 0, 0, (int)(0.6 * 2600)};
     int16_t phase[7] = {0, 0, 0, 0, 0, 0, 0};
     pwm_init(2600, duties, 7, pin_num);
     pwm_set_channel_invert(0x3F);
     pwm_set_phases(phase);
     pwm_start();
-    bool flash = false;
+    bool led_on = false;
 
+    while (true)
+    {
+        led_on = !led_on;
+        pwm_set_duty(0, (led_on == false) ? 0 : (mqttclient != NULL) ? color[0][0] * 10 : color[5][0] * 10);
+        pwm_set_duty(1, (led_on == false) ? 0 : (mqttclient != NULL) ? color[0][1] * 10 : color[5][1] * 10);
+        pwm_set_duty(2, (led_on == false) ? 0 : (mqttclient != NULL) ? color[0][2] * 10 : color[5][2] * 10);
+        pwm_set_duty(3, color[aqi_index][0] * 10);
+        pwm_set_duty(4, color[aqi_index][1] * 10);
+        pwm_set_duty(5, color[aqi_index][2] * 10);
+        pwm_start();
+        if (flash_led == true)
+        {
+            vTaskDelay(100 / portTICK_RATE_MS);
+        }
+        else
+        {
+            vTaskDelay(500 / portTICK_RATE_MS);
+        }
+    }
+    vTaskDelete(NULL);
+}
+
+static void button_task(void *arg)
+{
     static uint32_t hold_time;
     gpio_config_t io_conf;
     io_conf.intr_type = GPIO_INTR_DISABLE;
@@ -184,62 +187,33 @@ static void led_task(void *arg)
     io_conf.pull_down_en = 0;
     io_conf.pull_up_en = 1;
     gpio_config(&io_conf);
-
     while (true)
     {
-        flash = !flash;
-        if (flash)
-        {
-            if (mqttclient != NULL)
-            {
-                pwm_set_duty(0, color[0][0] * 10);
-                pwm_set_duty(1, color[0][1] * 10);
-                pwm_set_duty(2, color[0][2] * 10);
-            }
-            else
-            {
-                pwm_set_duty(0, color[5][0] * 10);
-                pwm_set_duty(1, color[5][1] * 10);
-                pwm_set_duty(2, color[5][2] * 10);
-            }
-        }
-        else
-        {
-            pwm_set_duty(0, 0);
-            pwm_set_duty(1, 0);
-            pwm_set_duty(2, 0);
-        }
-        pwm_set_duty(3, color[aqi_index][0] * 10);
-        pwm_set_duty(4, color[aqi_index][1] * 10);
-        pwm_set_duty(5, color[aqi_index][2] * 10);
-        pwm_start();
-
-        int key_status = gpio_get_level(BTN_PIN);
-        if (key_status == 0)
+        int button_status = gpio_get_level(BUTTON_PIN_NUM);
+        if (button_status == 0)
         {
             hold_time++;
         }
         else
         {
-            if (hold_time >= 30)
+            if (hold_time >= 150)
             {
                 csro_reset_router();
             }
             hold_time = 0;
         }
-        vTaskDelay(500 / portTICK_RATE_MS);
+        flash_led = (hold_time >= 150) ? true : false;
+        vTaskDelay(100 / portTICK_RATE_MS);
     }
     vTaskDelete(NULL);
 }
 
 void csro_airmon_csro_a_init(void)
 {
-    pub_sem = xSemaphoreCreateBinary();
-    xTaskCreate(receive_sensor_values_task, "receive_sensor_values_task", 2048, NULL, configMAX_PRIORITIES - 7, NULL);
     xTaskCreate(uart_event_task, "uart_event_task", 2048, NULL, configMAX_PRIORITIES - 8, NULL);
     xTaskCreate(led_task, "led_task", 2048, NULL, configMAX_PRIORITIES - 9, NULL);
+    xTaskCreate(button_task, "button_task", 2048, NULL, configMAX_PRIORITIES - 10, NULL);
 }
-
 void csro_airmon_csro_a_on_connect(esp_mqtt_event_handle_t event)
 {
     for (size_t i = 0; i < 6; i++)
@@ -275,7 +249,6 @@ void csro_airmon_csro_a_on_connect(esp_mqtt_event_handle_t event)
     sprintf(mqttinfo.pub_topic, "csro/%s/%s/available", sysinfo.mac_str, sysinfo.dev_type);
     esp_mqtt_client_publish(event->client, mqttinfo.pub_topic, "online", 0, 0, 1);
 }
-
 void csro_airmon_csro_a_on_message(esp_mqtt_event_handle_t event)
 {
 }
