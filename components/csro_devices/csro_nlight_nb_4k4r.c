@@ -10,6 +10,7 @@
 #define GPIO_INPUT_PIN_SEL ((1ULL << KEY_01_NUM) | (1ULL << KEY_02_NUM) | (1ULL << KEY_03_NUM) | (1ULL << KEY_04_NUM))
 
 int light_state[4] = {0, 0, 0, 0};
+uint8_t flash_led = false;
 
 static void nlight_nb_4k4r_mqtt_update(void)
 {
@@ -60,6 +61,7 @@ static void nlight_nb_4k4r_key_task(void *args)
                 hold_time[i] = 0;
             }
         }
+        flash_led = (hold_time[0] > 750 || hold_time[1] > 750 || hold_time[2] > 750 || hold_time[3] > 750) ? true : false;
         vTaskDelay(20 / portTICK_RATE_MS);
     }
     vTaskDelete(NULL);
@@ -68,6 +70,7 @@ static void nlight_nb_4k4r_key_task(void *args)
 static void nlight_nb_4k4r_relay_led_task(void *args)
 {
     static uint8_t status[4];
+    static bool led_flag;
     while (true)
     {
         bool update = false;
@@ -78,7 +81,15 @@ static void nlight_nb_4k4r_relay_led_task(void *args)
                 status[i] = light_state[i];
                 update = true;
             }
-            csro_set_led_nb(i, light_state[i] == 1 ? 128 : 8);
+            if (flash_led == true)
+            {
+                led_flag = (i == 0) ? !led_flag : led_flag;
+                csro_set_led_nb(i, led_flag ? 128 : 8);
+            }
+            else
+            {
+                csro_set_led_nb(i, light_state[i] == 1 ? 128 : 8);
+            }
             csro_set_relay_nb(i, light_state[i] == 1 ? true : false);
         }
         if (update)
@@ -86,7 +97,7 @@ static void nlight_nb_4k4r_relay_led_task(void *args)
             csro_set_vibrator_nb();
             nlight_nb_4k4r_mqtt_update();
         }
-        vTaskDelay(50 / portTICK_RATE_MS);
+        vTaskDelay(100 / portTICK_RATE_MS);
     }
     vTaskDelete(NULL);
 }

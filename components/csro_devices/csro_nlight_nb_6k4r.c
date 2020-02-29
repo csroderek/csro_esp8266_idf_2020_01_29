@@ -12,6 +12,7 @@
 #define GPIO_INPUT_PIN_SEL ((1ULL << KEY_01_NUM) | (1ULL << KEY_02_NUM) | (1ULL << KEY_03_NUM) | (1ULL << KEY_04_NUM) | (1ULL << KEY_05_NUM) | (1ULL << KEY_06_NUM))
 
 int light_state[4] = {0, 0, 0, 0};
+uint8_t flash_led = false;
 
 static void nlight_nb_6k4r_mqtt_update(void)
 {
@@ -55,7 +56,7 @@ static void nlight_nb_6k4r_key_task(void *args)
             }
             else
             {
-                if (hold_time[i] >= 3000)
+                if (hold_time[i] >= 750)
                 {
                     csro_reset_router();
                 }
@@ -75,6 +76,10 @@ static void nlight_nb_6k4r_key_task(void *args)
         }
         else
         {
+            if (hold_time[4] >= 750)
+            {
+                csro_reset_router();
+            }
             hold_time[4] = 0;
         }
         if (key_status[5] == 0)
@@ -90,8 +95,13 @@ static void nlight_nb_6k4r_key_task(void *args)
         }
         else
         {
+            if (hold_time[5] >= 750)
+            {
+                csro_reset_router();
+            }
             hold_time[5] = 0;
         }
+        flash_led = (hold_time[0] > 750 || hold_time[1] > 750 || hold_time[2] > 750 || hold_time[3] > 750 || hold_time[4] > 750 || hold_time[5] > 750) ? true : false;
         vTaskDelay(20 / portTICK_RATE_MS);
     }
     vTaskDelete(NULL);
@@ -100,6 +110,7 @@ static void nlight_nb_6k4r_key_task(void *args)
 static void nlight_nb_6k4r_relay_led_task(void *args)
 {
     static uint8_t status[4];
+    static bool led_flag;
     while (true)
     {
         bool update = false;
@@ -110,7 +121,15 @@ static void nlight_nb_6k4r_relay_led_task(void *args)
                 status[i] = light_state[i];
                 update = true;
             }
-            csro_set_led_nb(i, light_state[i] == 1 ? 128 : 8);
+            if (flash_led == true)
+            {
+                led_flag = (i == 0) ? !led_flag : led_flag;
+                csro_set_led_nb(i, led_flag ? 128 : 8);
+            }
+            else
+            {
+                csro_set_led_nb(i, light_state[i] == 1 ? 128 : 8);
+            }
             csro_set_relay_nb(i, light_state[i] == 1 ? true : false);
         }
         if (update)

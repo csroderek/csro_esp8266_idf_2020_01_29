@@ -8,7 +8,7 @@
 #define GPIO_OUTPUT_PIN_SEL ((1ULL << RELAY_01_NUM) | (1ULL << RELAY_02_NUM))
 
 int light_state[2] = {0, 0};
-int flash_led = false;
+uint8_t flash_led = false;
 
 static void nlight_sz_2k2r_mqtt_update(void)
 {

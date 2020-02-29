@@ -94,6 +94,7 @@ static void motor_nb_4k4r_relay_led_task(void *args)
 {
     static uint8_t motor_last[2] = {STOP, STOP};
     static uint16_t relay_count_100ms[2];
+    static bool led_flag;
     while (true)
     {
         bool update = false;
@@ -125,8 +126,17 @@ static void motor_nb_4k4r_relay_led_task(void *args)
                     motor[i] = (motor[i] == STOP_TO_CLOSE) ? CLOSE : (motor[i] == STOP_TO_OPEN) ? OPEN : STOP;
                 }
             }
-            csro_set_led_nb(i, (motor[i] == OPEN) ? 128 : 8);
-            csro_set_led_nb(i + 2, (motor[i] == CLOSE) ? 128 : 8);
+            if (flash_led == true)
+            {
+                led_flag = (i == 0) ? !led_flag : led_flag;
+                csro_set_led_nb(i, led_flag ? 128 : 8);
+                csro_set_led_nb(i + 2, led_flag ? 128 : 8);
+            }
+            else
+            {
+                csro_set_led_nb(i, (motor[i] == OPEN) ? 128 : 8);
+                csro_set_led_nb(i + 2, (motor[i] == CLOSE) ? 128 : 8);
+            }
             csro_set_relay_nb(2 * i, (motor[i] == OPEN) ? true : false);
             csro_set_relay_nb(2 * i + 1, (motor[i] == CLOSE) ? true : false);
         }
