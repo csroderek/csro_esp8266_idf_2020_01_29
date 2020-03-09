@@ -23,17 +23,21 @@
 #define MANUFACTURER "南京金星宇节能技术有限公司"
 #define SOFT_VERSION "2020-01-29"
 
-#define NLIGHT_NB_6K4R
-#define AW9523B_NB
+#define MOTOR_CSRO_3T2R
 
 /*
 #define NLIGHT_NB_4K4R
 #define NLIGHT_NB_6K4R
+#define AW9523B_NB
 
 #define NLIGHT_SZ_2K2R
+#define AW9523B_SZ
+
+#define MOTOR_CSRO_3T2R
 
 #define MOTOR_NB_4K4R
 #define AIRMON_CSRO_A
+
 */
 
 typedef struct

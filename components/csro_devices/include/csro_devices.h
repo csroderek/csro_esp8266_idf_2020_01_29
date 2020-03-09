@@ -33,4 +33,9 @@ void csro_nlight_sz_2k2r_init(void);
 void csro_nlight_sz_2k2r_on_connect(esp_mqtt_event_handle_t event);
 void csro_nlight_sz_2k2r_on_message(esp_mqtt_event_handle_t event);
 
+//csro_motor_csro_3t2r.c
+void csro_motor_csro_3t2r_init(void);
+void csro_motor_csro_3t2r_on_connect(esp_mqtt_event_handle_t event);
+void csro_motor_csro_3t2r_on_message(esp_mqtt_event_handle_t event);
+
 #endif
