@@ -10,6 +10,7 @@
 #include "esp_spi_flash.h"
 #include "esp_wifi.h"
 #include "driver/gpio.h"
+#include "driver/hw_timer.h"
 #include "esp_smartconfig.h"
 #include "esp_event_loop.h"
 
@@ -23,7 +24,7 @@
 #define MANUFACTURER "南京金星宇节能技术有限公司"
 #define SOFT_VERSION "2020-01-29"
 
-#define MOTOR_CSRO_3T2R
+#define DLIGHT_CSRO_3T3SCR
 
 /*
 #define NLIGHT_NB_4K4R
@@ -34,6 +35,7 @@
 #define AW9523B_SZ
 
 #define MOTOR_CSRO_3T2R
+#define DLIGHT_CSRO_3T3SCR
 
 #define MOTOR_NB_4K4R
 #define AIRMON_CSRO_A
