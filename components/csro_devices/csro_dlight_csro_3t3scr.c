@@ -47,10 +47,12 @@ uint8_t touch_states[3];
 uint8_t flash_led = false;
 uint8_t hc595_data = 0;
 uint8_t timer_flag = 0;
+uint8_t intr_flag = 0;
 
-static void csro_delay(uint16_t ticks)
+static void
+csro_delay(uint16_t ticks)
 {
-    uint32_t count = ticks * 5;
+    uint32_t count = ticks * 2;
     while (count > 0)
     {
         count--;
@@ -62,13 +64,13 @@ static void hc595_send_data(void)
     for (uint8_t i = 0; i < 8; i++)
     {
         gpio_set_level(HC595_SER, ((hc595_data << i) & 0x80) == 0 ? 0 : 1);
-        os_delay_us(2);
+        ets_delay_us(1);
         gpio_set_level(HC595_SRCLK, 1);
-        os_delay_us(2);
+        ets_delay_us(1);
         gpio_set_level(HC595_SRCLK, 0);
     }
     gpio_set_level(HC595_RCLK, 1);
-    os_delay_us(2);
+    ets_delay_us(1);
     gpio_set_level(HC595_RCLK, 0);
 }
 
@@ -91,30 +93,31 @@ void hw_timer_callback_led_scr_action_task(void *arg)
 
     if (timer_flag == 0)
     {
+        intr_flag = 0;
         timer_flag = 1;
         hc595_set_bit(LED_01_BIT, touch_states[0] == 0 ? true : false);
         hc595_set_bit(LED_02_BIT, touch_states[1] == 0 ? true : false);
         hc595_set_bit(LED_03_BIT, touch_states[2] == 0 ? true : false);
-        // hw_timer_alarm_us(bright_index[dlight.value] * 10 - 950, false);
+        hc595_send_data();
+        hw_timer_alarm_us(bright_index[dlight.value] * 10 - 950, false);
+    }
+    else if (timer_flag == 1)
+    {
+        timer_flag = 2;
+        hc595_set_bit(SCR_01_BIT, dlight.value > 0 ? false : true);
+        hc595_set_bit(SCR_02_BIT, dlight.value > 0 ? false : true);
+        hc595_set_bit(SCR_03_BIT, dlight.value > 0 ? false : true);
+        hc595_send_data();
+        hw_timer_alarm_us(500, false);
+    }
+    else if (timer_flag == 2)
+    {
+        timer_flag = 3;
+        hc595_set_bit(SCR_01_BIT, true);
+        hc595_set_bit(SCR_02_BIT, true);
+        hc595_set_bit(SCR_03_BIT, true);
         hc595_send_data();
     }
-    // else if (timer_flag == 1)
-    // {
-    //     timer_flag = 2;
-    //     hc595_set_bit(SCR_01_BIT, dlight.value > 0 ? false : true);
-    //     hc595_set_bit(SCR_02_BIT, dlight.value > 0 ? false : true);
-    //     hc595_set_bit(SCR_03_BIT, dlight.value > 0 ? false : true);
-    //     hw_timer_alarm_us(200, false);
-    //     hc595_send_data();
-    // }
-    // else if (timer_flag == 2)
-    // {
-    //     timer_flag = 3;
-    //     hc595_set_bit(SCR_01_BIT, true);
-    //     hc595_set_bit(SCR_02_BIT, true);
-    //     hc595_set_bit(SCR_03_BIT, true);
-    //     hc595_send_data();
-    // }
 }
 
 static void dlight_csro_3t3scr_mqtt_update(void)
@@ -211,15 +214,20 @@ static void dlight_csro_3t3scr_scr_task(void *args)
 
 static void gpio_isr_handler(void *arg)
 {
-    timer_flag = 0;
-    hc595_set_bit(LED_01_BIT, true);
-    hc595_set_bit(LED_02_BIT, true);
-    hc595_set_bit(LED_03_BIT, true);
-    hc595_set_bit(SCR_01_BIT, true);
-    hc595_set_bit(SCR_02_BIT, true);
-    hc595_set_bit(SCR_03_BIT, true);
-    hw_timer_alarm_us(1500, false);
-    hc595_send_data();
+    if (intr_flag == 0)
+    {
+        ets_delay_us(5);
+        if (gpio_get_level(AC_ZERO_NUM) == 1)
+        {
+            intr_flag = 1;
+            timer_flag = 0;
+            hc595_set_bit(LED_01_BIT, true);
+            hc595_set_bit(LED_02_BIT, true);
+            hc595_set_bit(LED_03_BIT, true);
+            hc595_send_data();
+            hw_timer_alarm_us(1400, false);
+        }
+    }
 }
 
 void csro_dlight_csro_3t3scr_init(void)
@@ -250,9 +258,9 @@ void csro_dlight_csro_3t3scr_init(void)
     gpio_install_isr_service(0);
     gpio_isr_handler_add(AC_ZERO_NUM, gpio_isr_handler, (void *)AC_ZERO_NUM);
 
-    hc595_set_bit(SCR_01_BIT, false);
-    hc595_set_bit(SCR_02_BIT, false);
-    hc595_set_bit(SCR_03_BIT, false);
+    hc595_set_bit(SCR_01_BIT, true);
+    hc595_set_bit(SCR_02_BIT, true);
+    hc595_set_bit(SCR_03_BIT, true);
     hc595_set_bit(TOUCH_CTRL_BIT, false);
     hc595_send_data();
     vTaskDelay(200 / portTICK_RATE_MS);
@@ -260,7 +268,7 @@ void csro_dlight_csro_3t3scr_init(void)
     hc595_send_data();
 
     xTaskCreate(dlight_csro_3t3scr_key_task, "dlight_csro_3t3scr_key_task", 2048, NULL, configMAX_PRIORITIES - 7, NULL);
-    xTaskCreate(dlight_csro_3t3scr_scr_task, "dlight_csro_3t3scr_scr_task", 2048, NULL, configMAX_PRIORITIES - 8, NULL);
+    xTaskCreate(dlight_csro_3t3scr_scr_task, "dlight_csro_3t3scr_scr_task", 4096, NULL, configMAX_PRIORITIES - 6, NULL);
 }
 void csro_dlight_csro_3t3scr_on_connect(esp_mqtt_event_handle_t event)
 {

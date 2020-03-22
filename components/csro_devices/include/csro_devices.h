@@ -43,4 +43,9 @@ void csro_dlight_csro_3t3scr_init(void);
 void csro_dlight_csro_3t3scr_on_connect(esp_mqtt_event_handle_t event);
 void csro_dlight_csro_3t3scr_on_message(esp_mqtt_event_handle_t event);
 
+//csro_nlight_csro_2t2scr.c
+void csro_nlight_csro_2t2scr_init(void);
+void csro_nlight_csro_2t2scr_on_connect(esp_mqtt_event_handle_t event);
+void csro_nlight_csro_2t2scr_on_message(esp_mqtt_event_handle_t event);
+
 #endif
