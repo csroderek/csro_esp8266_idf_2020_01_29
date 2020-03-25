@@ -20,7 +20,7 @@
 #include "lwip/sockets.h"
 #include "cJSON.h"
 
-#define USE_CLOUD_SERVER
+//#define USE_CLOUD_SERVER
 
 #define MANUFACTURER "南京金星宇节能技术有限公司"
 #define SOFT_VERSION "2020-01-29"
