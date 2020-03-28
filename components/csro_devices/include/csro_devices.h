@@ -3,6 +3,12 @@
 
 #include "csro_common.h"
 
+#define KEY_SCAN_RATE_MS 20
+#define KEY_ACTION_THRESHOLD 2    // 2*20 = 40 ms
+#define KEY_RESET_THRESHOLD 750   // 750*20 = 15 seconds
+#define KEY_REBOOT_THRESHOLD 1500 // 1500*20 = 30 seconds
+#define STATE_CHECK_RATE_MS 50
+
 //csro_channels.c
 void csro_nlight_channel_config(uint8_t index, char *model);
 void csro_motor_channel_config(uint8_t index, char *model);
@@ -51,5 +57,10 @@ void csro_dlight_csro_3t3scr_on_message(esp_mqtt_event_handle_t event);
 void csro_nlight_csro_2t2scr_init(void);
 void csro_nlight_csro_2t2scr_on_connect(esp_mqtt_event_handle_t event);
 void csro_nlight_csro_2t2scr_on_message(esp_mqtt_event_handle_t event);
+
+//csro_nlight_csro_3t3scr.c
+void csro_nlight_csro_3t3scr_init(void);
+void csro_nlight_csro_3t3scr_on_connect(esp_mqtt_event_handle_t event);
+void csro_nlight_csro_3t3scr_on_message(esp_mqtt_event_handle_t event);
 
 #endif

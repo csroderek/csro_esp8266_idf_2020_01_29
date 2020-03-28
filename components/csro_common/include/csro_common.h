@@ -27,7 +27,7 @@
 #define MANUFACTURER "南京金星宇节能技术有限公司"
 #define SOFT_VERSION "2020-01-29"
 
-#define NLIGHT_CSRO_2T2SCR
+#define NLIGHT_CSRO_3T3SCR
 
 /*
 #define NLIGHT_NB_4K4R
@@ -40,6 +40,7 @@
 #define MOTOR_CSRO_3T2R
 #define DLIGHT_CSRO_3T3SCR
 #define NLIGHT_CSRO_2T2SCR
+#define NLIGHT_CSRO_3T3SCR
 
 #define MOTOR_NB_4K4R
 #define AIRMON_CSRO_A

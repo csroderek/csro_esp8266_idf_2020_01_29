@@ -48,6 +48,10 @@ void csro_device_init(void)
 #elif defined NLIGHT_CSRO_2T2SCR
     sprintf(sysinfo.dev_type, "nlight-csro-2t2scr");
     csro_nlight_csro_2t2scr_init();
+
+#elif defined NLIGHT_CSRO_3T3SCR
+    sprintf(sysinfo.dev_type, "nlight-csro-3t3scr");
+    csro_nlight_csro_3t3scr_init();
 #endif
 }
 
@@ -76,6 +80,9 @@ void csro_device_on_connect(esp_mqtt_event_handle_t event)
 
 #elif defined NLIGHT_CSRO_2T2SCR
     csro_nlight_csro_2t2scr_on_connect(event);
+
+#elif defined NLIGHT_CSRO_3T3SCR
+    csro_nlight_csro_3t3scr_on_connect(event);
 #endif
 }
 
@@ -104,5 +111,8 @@ void csro_device_on_message(esp_mqtt_event_handle_t event)
 
 #elif defined NLIGHT_CSRO_2T2SCR
     csro_nlight_csro_2t2scr_on_message(event);
+
+#elif defined NLIGHT_CSRO_3T3SCR
+    csro_nlight_csro_3t3scr_on_message(event);
 #endif
 }
