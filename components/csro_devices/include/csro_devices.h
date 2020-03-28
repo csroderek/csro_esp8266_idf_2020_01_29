@@ -3,6 +3,10 @@
 
 #include "csro_common.h"
 
+//csro_channels.c
+void csro_nlight_channel_config(uint8_t index, char *model);
+void csro_motor_channel_config(uint8_t index, char *model);
+
 //csro_devices.c
 void csro_device_init(void);
 void csro_device_on_connect(esp_mqtt_event_handle_t event);

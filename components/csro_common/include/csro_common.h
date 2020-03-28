@@ -6,13 +6,15 @@
 #include "freertos/task.h"
 #include "freertos/timers.h"
 #include "freertos/semphr.h"
+
 #include "esp_system.h"
 #include "esp_spi_flash.h"
 #include "esp_wifi.h"
-#include "driver/gpio.h"
-#include "driver/hw_timer.h"
 #include "esp_smartconfig.h"
 #include "esp_event_loop.h"
+
+#include "driver/gpio.h"
+#include "driver/hw_timer.h"
 #include "driver/rtc.h"
 
 #include "nvs_flash.h"
@@ -46,18 +48,14 @@
 
 typedef struct
 {
-    uint8_t restore_flag;
     uint8_t router_flag;
-    char router_ssid[50];
-    char router_pass[50];
-    uint8_t mac[6];
+    char router_ssid[35];
+    char router_pass[35];
     char mac_str[20];
-    uint8_t ip[4];
-    char ip_str[20];
     char host_name[20];
     char dev_type[20];
-    uint32_t power_cnt;
     uint32_t time_run;
+    int8_t rssi;
 } csro_system;
 
 typedef struct

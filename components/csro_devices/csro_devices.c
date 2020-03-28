@@ -4,7 +4,9 @@ static void device_run_time_task(void *args)
 {
     while (true)
     {
-        printf("Run %d mins. Free heap is %d\r\n", sysinfo.time_run, esp_get_free_heap_size());
+        wifi_ap_record_t ap_info;
+        esp_wifi_sta_get_ap_info(&ap_info);
+        sysinfo.rssi = ap_info.rssi;
         sysinfo.time_run++;
         vTaskDelay(60000 / portTICK_RATE_MS);
     }
@@ -16,35 +18,35 @@ void csro_device_init(void)
     xTaskCreate(device_run_time_task, "device_run_time_task", 2048, NULL, configMAX_PRIORITIES - 10, NULL);
 
 #ifdef NLIGHT_NB_4K4R
-    sprintf(sysinfo.dev_type, "nlight_nb_4k4r");
+    sprintf(sysinfo.dev_type, "nlight-nb-4k4r");
     csro_nlight_nb_4k4r_init();
 
 #elif defined NLIGHT_NB_6K4R
-    sprintf(sysinfo.dev_type, "nlight_nb_6k4r");
+    sprintf(sysinfo.dev_type, "nlight-nb-6k4r");
     csro_nlight_nb_6k4r_init();
 
 #elif defined MOTOR_NB_4K4R
-    sprintf(sysinfo.dev_type, "motor_nb_4k4r");
+    sprintf(sysinfo.dev_type, "motor-nb-4k4r");
     csro_motor_nb_4k4r_init();
 
 #elif defined AIRMON_CSRO_A
-    sprintf(sysinfo.dev_type, "airmon_csro_a");
+    sprintf(sysinfo.dev_type, "airmon-csro-a");
     csro_airmon_csro_a_init();
 
 #elif defined NLIGHT_SZ_2K2R
-    sprintf(sysinfo.dev_type, "nlight_sz_2k2r");
+    sprintf(sysinfo.dev_type, "nlight-sz-2k2r");
     csro_nlight_sz_2k2r_init();
 
 #elif defined MOTOR_CSRO_3T2R
-    sprintf(sysinfo.dev_type, "motor_csro_3t2r");
+    sprintf(sysinfo.dev_type, "motor-csro-3t2r");
     csro_motor_csro_3t2r_init();
 
 #elif defined DLIGHT_CSRO_3T3SCR
-    sprintf(sysinfo.dev_type, "dlight_csro_3t3scr");
+    sprintf(sysinfo.dev_type, "dlight-csro-3t3scr");
     csro_dlight_csro_3t3scr_init();
 
 #elif defined NLIGHT_CSRO_2T2SCR
-    sprintf(sysinfo.dev_type, "nlight_csro_2t2scr");
+    sprintf(sysinfo.dev_type, "nlight-csro-2t2scr");
     csro_nlight_csro_2t2scr_init();
 #endif
 }

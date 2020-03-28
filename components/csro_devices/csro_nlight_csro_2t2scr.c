@@ -107,6 +107,7 @@ static void nlight_csro_2t2scr_mqtt_update(void)
         cJSON *state_json = cJSON_CreateObject();
         cJSON_AddItemToObject(state_json, "state", cJSON_CreateIntArray(light_states, 2));
         cJSON_AddNumberToObject(state_json, "run", sysinfo.time_run);
+        cJSON_AddNumberToObject(state_json, "rssi", sysinfo.rssi);
         char *out = cJSON_PrintUnformatted(state_json);
         strcpy(mqttinfo.content, out);
         free(out);
@@ -178,36 +179,7 @@ void csro_nlight_csro_2t2scr_on_connect(esp_mqtt_event_handle_t event)
     esp_mqtt_client_subscribe(event->client, mqttinfo.sub_topic, 0);
     for (uint8_t i = 0; i < 2; i++)
     {
-        char prefix[50], name[50], state[50], command[50], deviceid[50];
-        sprintf(mqttinfo.pub_topic, "csro/light/%s_%s_%d/config", sysinfo.mac_str, sysinfo.dev_type, i);
-        sprintf(prefix, "csro/%s/%s", sysinfo.mac_str, sysinfo.dev_type);
-        sprintf(name, "%s_%s_%d", sysinfo.mac_str, sysinfo.dev_type, i);
-        sprintf(deviceid, "%s_%s", sysinfo.mac_str, sysinfo.dev_type);
-        sprintf(state, "{{value_json.state[%d]}}", i);
-        sprintf(command, "~/set/%d", i);
-
-        cJSON *config_json = cJSON_CreateObject();
-        cJSON *device = cJSON_CreateObject();
-        cJSON_AddStringToObject(config_json, "~", prefix);
-        cJSON_AddStringToObject(config_json, "name", name);
-        cJSON_AddStringToObject(config_json, "unique_id", name);
-        cJSON_AddStringToObject(config_json, "cmd_t", command);
-        cJSON_AddNumberToObject(config_json, "pl_on", 1);
-        cJSON_AddNumberToObject(config_json, "pl_off", 0);
-        cJSON_AddStringToObject(config_json, "stat_t", "~/state");
-        cJSON_AddStringToObject(config_json, "stat_val_tpl", state);
-        cJSON_AddStringToObject(config_json, "avty_t", "~/available");
-        cJSON_AddItemToObject(config_json, "dev", device);
-        cJSON_AddStringToObject(device, "ids", deviceid);
-        cJSON_AddStringToObject(device, "name", deviceid);
-        cJSON_AddStringToObject(device, "mf", MANUFACTURER);
-        cJSON_AddStringToObject(device, "mdl", "NLIGHT_CSRO_2T2SCR");
-        cJSON_AddStringToObject(device, "sw", SOFT_VERSION);
-
-        char *out = cJSON_PrintUnformatted(config_json);
-        strcpy(mqttinfo.content, out);
-        free(out);
-        cJSON_Delete(config_json);
+        csro_nlight_channel_config(i, "NLIGHT_CSRO_2T2SCR");
         esp_mqtt_client_publish(event->client, mqttinfo.pub_topic, mqttinfo.content, 0, 0, 1);
     }
     sprintf(mqttinfo.pub_topic, "csro/%s/%s/available", sysinfo.mac_str, sysinfo.dev_type);
