@@ -30,6 +30,11 @@ void csro_hc595_set_bit(uint8_t index, bool value)
     }
 }
 
+void csro_hc595_set_byte(uint8_t byte_data)
+{
+    hc595_data = byte_data;
+}
+
 void csro_hc595_send_data(void)
 {
     for (uint8_t i = 0; i < 8; i++)
